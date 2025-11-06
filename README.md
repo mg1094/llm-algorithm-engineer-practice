@@ -12,6 +12,7 @@
 - ✅ **模型优化** - 量化、剪枝、蒸馏等优化技术
 - ✅ **多模态识别** - 图像识别、视频识别、声纹识别
 - ✅ **模型部署** - Flask、FastAPI、Gradio等多种部署方式
+- ✅ **移动端部署** - YOLOv8模型在iOS/Android上的部署（CoreML/TFLite）
 
 ## 🚀 快速开始
 
@@ -47,13 +48,26 @@ sheng_cheng/
 │   │   └── optimizer.py         # 量化、剪枝、蒸馏
 │   ├── multimodal/              # 多模态识别模块
 │   │   └── recognizer.py        # 图像、视频、声纹识别
-│   └── deployment/              # 模型部署模块
-│       └── server.py            # Flask/FastAPI/Gradio服务
+│   ├── deployment/              # 模型部署模块
+│   │   └── server.py            # Flask/FastAPI/Gradio服务
+│   └── mobile_deployment/       # 移动端部署模块
+│       ├── converters/          # 模型转换器
+│       │   └── yolo_converter.py # YOLOv8转换工具
+│       ├── utils/               # 工具函数
+│       │   └── performance_evaluator.py # 性能评估
+│       ├── ios/                 # iOS部署示例
+│       └── android/             # Android部署示例
 ├── data/                         # 数据目录
 │   ├── raw/                     # 原始数据
 │   ├── processed/               # 处理后的数据
 │   └── cache/                   # 缓存数据
 ├── models/                       # 模型文件目录
+├── mobile/                       # 移动端文件目录
+│   ├── models/                  # 移动端模型文件
+│   ├── ios/                     # iOS项目文件
+│   └── android/                 # Android项目文件
+├── docs/                         # 文档目录
+│   └── mobile/                  # 移动端部署文档
 ├── checkpoints/                 # 模型检查点
 ├── logs/                        # 日志文件
 ├── config.yaml                  # 配置文件
@@ -198,6 +212,62 @@ manager.deploy_fastapi(host="0.0.0.0", port=8000)
 manager.deploy_gradio(input_type="text", server_port=7860)
 ```
 
+### 7. 移动端部署模块 (`src/mobile_deployment/`) 🆕
+
+YOLOv8模型在iOS和Android移动端的部署工具和示例代码。
+
+**主要功能：**
+- YOLOv8模型转换（PyTorch → ONNX → CoreML/TFLite）
+- iOS部署（Swift + CoreML）
+- Android部署（Kotlin + TFLite）
+- 性能评估工具（推理速度、内存占用）
+- 实时目标检测和图片检测支持
+
+**模型转换示例：**
+
+```python
+from src.mobile_deployment.converters.yolo_converter import YOLOv8MobileConverter
+
+# 创建转换器（使用nano版本，最适合移动端）
+converter = YOLOv8MobileConverter(model_size='n')
+
+# 转换所有格式（ONNX、CoreML、TFLite）
+results = converter.convert_all(
+    output_dir="./mobile/models",
+    model_name="yolov8n_mobile"
+)
+```
+
+**性能评估示例：**
+
+```python
+from src.mobile_deployment.utils.performance_evaluator import MobilePerformanceEvaluator
+
+# 评估ONNX模型性能
+evaluator = MobilePerformanceEvaluator(
+    model_path="./mobile/models/yolov8n.onnx",
+    model_type='onnx'
+)
+report = evaluator.comprehensive_evaluation()
+```
+
+**iOS部署：**
+- 详细指南：`docs/mobile/ios_deployment_guide.md`
+- 示例代码：`src/mobile_deployment/ios/ios_guide.py`
+- 支持实时相机检测和图片检测
+
+**Android部署：**
+- 详细指南：`docs/mobile/android_deployment_guide.md`
+- 示例代码：`src/mobile_deployment/android/android_guide.py`
+- 支持GPU加速（GpuDelegate）和NNAPI加速
+
+**移动端部署特点：**
+- ✅ 支持YOLOv8n（nano版本，速度最快）
+- ✅ 自动模型优化（量化、简化）
+- ✅ 完整的iOS/Android示例代码
+- ✅ 性能评估工具
+- ✅ 实时检测和图片检测支持
+
 ## ⚙️ 配置说明
 
 项目使用 `config.yaml` 进行配置管理，主要配置项包括：
@@ -248,6 +318,8 @@ manager.deploy_gradio(input_type="text", server_port=7860)
 - ✅ Web爬虫开发
 - ✅ 模型部署（Flask、FastAPI、Gradio）
 - ✅ 模型导出（ONNX、TorchScript）
+- ✅ 移动端部署（iOS CoreML、Android TFLite）
+- ✅ YOLO系列模型移动端优化
 
 ## 📚 使用示例
 
@@ -276,6 +348,20 @@ optimized_model = optimizer.optimize(quantization=True, pruning=True)
 from src.deployment.server import ModelDeploymentManager
 manager = ModelDeploymentManager(optimized_model, "my_model")
 manager.deploy_fastapi(host="0.0.0.0", port=8000)
+
+# 5. 移动端部署（YOLOv8）
+from src.mobile_deployment.converters.yolo_converter import YOLOv8MobileConverter
+
+# 转换模型为移动端格式
+converter = YOLOv8MobileConverter(model_size='n')
+results = converter.convert_all(
+    output_dir="./mobile/models",
+    model_name="yolov8n"
+)
+# 生成的文件：
+# - yolov8n.onnx (ONNX格式)
+# - yolov8n.mlmodel (iOS CoreML格式)
+# - yolov8n.tflite (Android TFLite格式)
 ```
 
 ## 🤝 贡献指南
@@ -291,6 +377,11 @@ MIT License
 - [PyTorch官方文档](https://pytorch.org/docs/)
 - [Pandas官方文档](https://pandas.pydata.org/docs/)
 - [FastAPI官方文档](https://fastapi.tiangolo.com/)
+- [YOLOv8官方文档](https://docs.ultralytics.com/)
+- [CoreML官方文档](https://developer.apple.com/documentation/coreml)
+- [TensorFlow Lite文档](https://www.tensorflow.org/lite)
+- [iOS部署指南](docs/mobile/ios_deployment_guide.md)
+- [Android部署指南](docs/mobile/android_deployment_guide.md)
 
 ## 📧 联系方式
 

@@ -48,3 +48,11 @@ transformers>=4.35.0
 accelerate>=0.25.0
 bitsandbytes>=0.41.0
 
+# 移动端部署
+ultralytics>=8.0.0  # YOLOv8
+coremltools>=7.0.0  # CoreML模型转换（iOS）
+tflite>=2.13.0      # TensorFlow Lite（Android）
+tf2onnx>=1.15.0     # TensorFlow到ONNX转换
+onnxruntime>=1.16.0 # ONNX Runtime（移动端推理）
+onnx-simplifier>=0.4.0  # ONNX模型简化
+
